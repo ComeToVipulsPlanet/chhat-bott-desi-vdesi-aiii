@@ -2,303 +2,197 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desi aur VDesi Ai</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desi & Vdesi Ai</title>
 
-    <!-- Google Font: Poppins -->
+    <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- marked.js for Markdown rendering of bot replies -->
+    <!-- Markdown parser so bot replies with bold/lists render properly -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
-        /* ==========================================================================
-     THEME / CUSTOMIZATION VARIABLES
-     Change anything here and the whole app re-skins itself.
-     Theme: "Desi aur VDesi Ai" — a warm, Indian-inspired light theme.
-       - Primary   = Marigold / Saffron  (festive, energetic — the "desi" warmth)
-       - Secondary = Peacock Green/Teal  (accent, calm counterbalance)
-       - Background= Warm Ivory          (light, soft, not clinical white)
-     ========================================================================== */
+        /* ============================================
+     THEME VARIABLES — change these to reskin the
+     whole app. Every element below pulls its
+     colors/fonts/spacing from these variables.
+     ============================================ */
         :root {
             --theme-mode: light;
-            --color-primary: #410a33;
-            /* marigold / saffron orange */
-            --color-primary-dark: #f0ebe9;
-            --color-secondary: #2e29a7;
-            /* peacock green accent */
-            --color-secondary-light: #094427;
-            --color-background: #e8e3de;
-            /* warm ivory */
-            --color-surface: #14d4de;
-            --color-text: #2B1B12;
-            /* deep warm brown, not pure black */
-            --color-text-muted: #8A7566;
-            --color-border: #F0DFC8;
-
+            --color-primary: #2E9DF7;
+            --color-secondary: #FFD400;
+            --color-background: #F5FBFF;
+            --color-text: #1f2937;
+            --color-bubble-user: var(--color-primary);
+            --color-bubble-bot: #ffffff;
             --font-family: 'Poppins', sans-serif;
             --font-size-base: 15px;
-
             --border-radius: 24px;
             --chat-max-width: 480px;
             --bubble-style: pill;
-            /* rounded, playful pill bubbles */
-
-            --shadow-soft: 0 4px 20px rgba(232, 89, 12, 0.08);
-            --shadow-header: 0 2px 12px rgba(43, 27, 18, 0.06);
         }
 
-        /*
-    --layout-style concept (comment-only, for future tweaking):
-    The app is a single centered column, capped at --chat-max-width, so it
-    reads as a native "app" on desktop (like a phone mock-up) and expands
-    to fill the viewport on mobile. Header is sticky at the top using
-    --color-surface + --shadow-header. Bubbles use --bubble-style: pill,
-    meaning very large --border-radius values (999px) rather than the
-    boxier --border-radius used for cards/inputs. Every spacing unit
-    scales off --font-size-base so bumping that one variable rescales
-    the whole UI proportionally.
-  */
+        /* --layout-style concept:
+     - Desktop (>600px): centered card, max-width var(--chat-max-width), full viewport height minus margin.
+     - Mobile (<=600px): app fills the full screen edge-to-edge, header becomes a fixed top bar.
+     - Bubble radius, spacing, and colors all scale from the same variables so the
+       whole layout can be reskinned by editing :root only. */
 
         * {
             box-sizing: border-box;
         }
 
-        html,
         body {
             margin: 0;
-            padding: 0;
-            height: 100%;
-            background: var(--color-background);
             font-family: var(--font-family);
             font-size: var(--font-size-base);
+            background: var(--color-background);
             color: var(--color-text);
-        }
-
-        body {
             display: flex;
             justify-content: center;
-            align-items: stretch;
+            align-items: center;
             min-height: 100vh;
+            padding: 16px;
         }
 
-        /* Scrollbar theming */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--color-primary);
-            opacity: 0.4;
-            border-radius: 8px;
-        }
-
-        .app {
+        .chat-app {
             width: 100%;
             max-width: var(--chat-max-width);
+            height: 90vh;
+            max-height: 720px;
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            background: var(--color-background);
-            position: relative;
+            overflow: hidden;
         }
 
-        /* ---------------- Header ---------------- */
-        .header {
-            background: var(--color-surface);
-            box-shadow: var(--shadow-header);
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 10;
-        }
-
-        .header-titles {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-emoji {
-            font-size: 28px;
-            line-height: 1;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 19px;
-            font-weight: 700;
-            color: var(--color-primary);
-            letter-spacing: 0.2px;
-        }
-
-        .header p {
-            margin: 0;
-            font-size: 12.5px;
-            color: var(--color-text-muted);
-            font-weight: 400;
-        }
-
-        .clear-btn {
-            background: var(--color-secondary-light);
-            color: var(--color-secondary);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 999px;
-            font-family: var(--font-family);
-            font-size: 12.5px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            white-space: nowrap;
-        }
-
-        .clear-btn:hover {
-            background: var(--color-secondary);
+        /* Header */
+        .chat-header {
+            background: var(--color-primary);
             color: #fff;
+            padding: 18px 20px;
+            text-align: center;
         }
 
-        /* ---------------- Chat thread ---------------- */
+        .chat-header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .chat-header p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Message thread */
         .chat-thread {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 16px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            background: var(--color-background);
         }
 
-        .msg-row {
-            display: flex;
-            max-width: 100%;
+        .chat-thread::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .msg-row.user {
-            justify-content: flex-end;
-        }
-
-        .msg-row.bot {
-            justify-content: flex-start;
-        }
-
-        .bubble {
-            padding: 11px 18px;
-            line-height: 1.5;
-            font-size: var(--font-size-base);
-            max-width: 78%;
-            word-wrap: break-word;
-            box-shadow: var(--shadow-soft);
-            animation: pop-in 0.18s ease;
-        }
-
-        /* --bubble-style: pill -> very rounded, playful bubbles */
-        .bubble {
-            border-radius: 999px;
-            padding: 12px 20px;
-        }
-
-        /* Long / multi-line bot messages (with lists, headings) need softer
-     corners than a true pill so content doesn't look squeezed */
-        .bubble.multiline {
-            border-radius: var(--border-radius);
-        }
-
-        .msg-row.user .bubble {
+        .chat-thread::-webkit-scrollbar-thumb {
             background: var(--color-primary);
-            color: #fff;
-            border-bottom-right-radius: 6px;
+            border-radius: 10px;
         }
 
-        .msg-row.bot .bubble {
-            background: var(--color-surface);
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
-            border-bottom-left-radius: 6px;
+        .msg {
+            max-width: 78%;
+            padding: 10px 16px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-base);
+            animation: fadeIn 0.2s ease-in;
         }
 
-        .bubble p {
-            margin: 0 0 8px 0;
-        }
-
-        .bubble p:last-child {
-            margin-bottom: 0;
-        }
-
-        .bubble ul,
-        .bubble ol {
-            margin: 6px 0;
-            padding-left: 20px;
-        }
-
-        .bubble code {
-            background: rgba(0, 0, 0, 0.06);
-            padding: 1px 5px;
-            border-radius: 6px;
-            font-size: 0.9em;
-        }
-
-        .msg-row.user .bubble code {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .bubble strong {
-            color: var(--color-primary);
-        }
-
-        .msg-row.user .bubble strong {
-            color: #fff;
-        }
-
-        @keyframes pop-in {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(6px) scale(0.98);
+                transform: translateY(4px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
-        /* Typing indicator */
-        .typing-bubble {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            padding: 14px 20px;
+        .msg.user {
+            align-self: flex-end;
+            background: var(--color-bubble-user);
+            color: #fff;
+            border-bottom-right-radius: 6px;
         }
 
-        .typing-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
+        .msg.bot {
+            align-self: flex-start;
+            background: var(--color-bubble-bot);
+            color: var(--color-text);
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 6px;
+        }
+
+        .msg.error {
+            align-self: center;
+            background: #ffe5e5;
+            color: #b91c1c;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .msg p {
+            margin: 0 0 6px;
+        }
+
+        .msg p:last-child {
+            margin-bottom: 0;
+        }
+
+        .msg ul,
+        .msg ol {
+            margin: 4px 0;
+            padding-left: 20px;
+        }
+
+        .typing {
+            align-self: flex-start;
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--color-bubble-bot);
+            border: 1px solid #e5e7eb;
+            border-radius: var(--border-radius);
+        }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
             background: var(--color-primary);
-            opacity: 0.5;
+            border-radius: 50%;
             animation: bounce 1.2s infinite ease-in-out;
         }
 
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.15s;
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
         }
 
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.3s;
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
         }
 
         @keyframes bounce {
@@ -316,89 +210,81 @@
             }
         }
 
-        /* Error message styling */
-        .msg-row.error .bubble {
-            background: #FDECEA;
-            border: 1px solid #F5C2BE;
-            color: #A83A2E;
-            border-radius: var(--border-radius);
-        }
-
-        /* ---------------- Input bar ---------------- */
-        .input-bar {
+        /* Input area */
+        .chat-input-area {
             display: flex;
-            gap: 10px;
-            padding: 14px 16px;
-            background: var(--color-surface);
-            box-shadow: 0 -2px 12px rgba(43, 27, 18, 0.05);
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid #eee;
+            background: #fff;
         }
 
-        .input-bar textarea {
+        #userInput {
             flex: 1;
-            resize: none;
-            border: 1px solid var(--color-border);
-            background: var(--color-background);
-            border-radius: 999px;
-            padding: 12px 18px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 10px 16px;
             font-family: var(--font-family);
             font-size: var(--font-size-base);
-            color: var(--color-text);
             outline: none;
-            max-height: 100px;
-            line-height: 1.4;
-            transition: border-color 0.15s ease;
         }
 
-        .input-bar textarea:focus {
+        #userInput:focus {
             border-color: var(--color-primary);
         }
 
-        .send-btn {
+        #sendBtn,
+        #clearBtn {
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-weight: 600;
+        }
+
+        #sendBtn {
             background: var(--color-primary);
             color: #fff;
-            border: none;
-            width: 46px;
-            height: 46px;
-            min-width: 46px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.15s ease, transform 0.1s ease;
+            padding: 10px 18px;
+            border-radius: var(--border-radius);
         }
 
-        .send-btn:hover {
-            background: var(--color-primary-dark);
+        #sendBtn:hover {
+            opacity: 0.9;
         }
 
-        .send-btn:active {
-            transform: scale(0.93);
-        }
-
-        .send-btn:disabled {
-            background: var(--color-text-muted);
-            cursor: not-allowed;
+        #sendBtn:disabled {
             opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .send-btn svg {
-            width: 20px;
-            height: 20px;
+        .chat-header-actions {
+            position: absolute;
+            top: 14px;
+            right: 14px;
         }
 
-        /* ---------------- Responsive ---------------- */
-        @media (max-width: 520px) {
-            .app {
-                max-width: 100%;
+        #clearBtn {
+            background: var(--color-secondary);
+            color: #1f2937;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
+
+        .chat-header {
+            position: relative;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
             }
 
-            .bubble {
-                max-width: 85%;
-            }
-
-            .header {
-                padding: 14px 16px;
+            .chat-app {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
             }
         }
     </style>
@@ -406,254 +292,133 @@
 
 <body>
 
-    <div class="app">
-
-        <!-- Header -->
-        <div class="header">
-            <div class="header-logo">
-                <span class="header-emoji">🪔</span>
-                <div class="header-titles">
-                    <h1>Desi aur VDesi Ai</h1>
-                    <p>Your dost for desi vibes &amp; videsi smarts ✨</p>
-                </div>
+    <div class="chat-app">
+        <div class="chat-header">
+            <h1>Desi & Vdesi Ai</h1>
+            <p>Your friendly desi-style chat buddy 🌶️</p>
+            <div class="chat-header-actions">
+                <button id="clearBtn">Clear chat</button>
             </div>
-            <button class="clear-btn" id="clearBtn" title="Clear chat">Clear chat</button>
         </div>
 
-        <!-- Chat thread -->
         <div class="chat-thread" id="chatThread"></div>
 
-        <!-- Input bar -->
-        <div class="input-bar">
-            <textarea id="userInput" rows="1" placeholder="Type a message... (Enter to send)"></textarea>
-            <button class="send-btn" id="sendBtn" title="Send">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 20L21 12L3 4V10L17 12L3 14V20Z" fill="currentColor" />
-                </svg>
-            </button>
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off" />
+            <button id="sendBtn">Send</button>
         </div>
-
     </div>
 
     <script>
-        // 🔑 Paste your Gemini API key below. Get one at https://aistudio.google.com/apikey
-        // NOTE: This key is embedded directly in the page source on purpose (per app spec),
-        // so it will be visible to anyone who views the page source. That's expected and
-        // fine for local/personal use only — do NOT deploy this publicly with a real key.
-        const API_KEY = "PASTE_YOUR_API_KEY_HERE";
+        // ============================================
+        // Persona / system instruction
+        // ============================================
+        const SYSTEM_PROMPT = `You are Desi & Vdesi Ai, a warm, witty chatbot with a fun desi-flavored
+personality. You mix friendliness with a bit of playful Hinglish/desi humor where natural, but
+you always stay clear and helpful. Keep replies concise, conversational, and easy to read. Use
+markdown formatting (bold, bullet lists) when it helps clarity.`;
 
-        // Strictly use the Gemini 3.6 endpoint only, as required.
-        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
+        const OPENING_GREETING = "Arre hello! 👋 I'm Desi & Vdesi Ai — your friendly desi-style chat buddy. Kya haal hai? Ask me anything!";
 
-        // ---------------------------------------------------------------------
-        // Persona / system instruction for "Desi aur VDesi Ai"
-        // A warm, friendly Indian-flavored assistant that blends "desi" (local/
-        // Indian) warmth with "videsi" (foreign/global) knowledge — casual
-        // Hinglish sprinkled in, culturally aware, encouraging, uses the
-        // occasional emoji, never preachy.
-        // ---------------------------------------------------------------------
-        const SYSTEM_INSTRUCTION = {
-            parts: [{
-                text: `You are "Desi aur VDesi Ai" — a warm, friendly, culturally-aware AI companion.
-Your personality:
-- You blend "desi" warmth (Indian culture, festivals, food, family values, casual Hinglish phrases like "arre wah", "bilkul", "chalo", "matlab") with "videsi" (global/western) knowledge and perspective.
-- You are chatty, encouraging, and never condescending — like a smart, well-travelled friend (dost) who happens to know everything.
-- Default to friendly English with light, natural Hinglish sprinkled in where it fits (not forced, not in every sentence).
-- Use emojis occasionally and tastefully (not in every message).
-- Keep replies well-formatted with Markdown (bold, bullet points) when helpful, but keep them concise unless asked for depth.
-- You're helpful with anything: everyday advice, tech, studies, recipes, travel, career, or just casual chat.
-Always stay warm, respectful, and genuinely helpful.`
-            }]
-        };
-
-        const OPENING_GREETING = "Namaste! 🙏 Main hoon **Desi aur VDesi Ai** — your dost for everything from ghar ki baatein to duniya ki khabrein. Kya chal raha hai aaj? Ask me anything!";
-
-        // Conversation history sent to the API — array of {role, parts}
-        // role is either "user" or "model"
+        // Conversation history sent to the API each time, for context
         let conversationHistory = [];
 
-        // ---------------- DOM references ----------------
         const chatThread = document.getElementById('chatThread');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const clearBtn = document.getElementById('clearBtn');
 
-        // ---------------- Helpers ----------------
-
-        // Render a message bubble into the thread.
-        // sender: 'user' | 'bot' | 'error'
-        function renderMessage(sender, rawText) {
-            const row = document.createElement('div');
-            row.className = `msg-row ${sender}`;
-
+        function addMessage(text, role) {
             const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-
-            if (sender === 'bot') {
-                // Render markdown for bot messages (bold, lists, code, etc.)
-                bubble.innerHTML = marked.parse(rawText);
-                if (rawText.includes('\n') || rawText.length > 80) {
-                    bubble.classList.add('multiline');
-                }
-            } else {
-                // Plain text for user messages / errors (no markdown parsing needed)
-                bubble.textContent = rawText;
-            }
-
-            row.appendChild(bubble);
-            chatThread.appendChild(row);
-            scrollToBottom();
-            return row;
+            bubble.className = 'msg ' + role;
+            bubble.innerHTML = (role === 'error') ? text : marked.parse(text);
+            chatThread.appendChild(bubble);
+            chatThread.scrollTop = chatThread.scrollHeight;
+            return bubble;
         }
 
-        function scrollToBottom() {
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'typing';
+            typing.id = 'typingIndicator';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            chatThread.appendChild(typing);
             chatThread.scrollTop = chatThread.scrollHeight;
         }
 
-        // Shows an animated "typing..." bubble, returns the row so it can be removed later.
-        function showTypingIndicator() {
-            const row = document.createElement('div');
-            row.className = 'msg-row bot';
-            row.id = 'typingRow';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble typing-bubble';
-            bubble.innerHTML = `
-      <span class="typing-dot"></span>
-      <span class="typing-dot"></span>
-      <span class="typing-dot"></span>
-    `;
-
-            row.appendChild(bubble);
-            chatThread.appendChild(row);
-            scrollToBottom();
-            return row;
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
         }
 
-        function removeTypingIndicator() {
-            const row = document.getElementById('typingRow');
-            if (row) row.remove();
-        }
+        // ============================================
+        // Sends the message to our own secure serverless
+        // endpoint (/api/chat) instead of calling Gemini
+        // directly. The API key lives only on the server.
+        // ============================================
+        async function sendMessage(userText) {
+            conversationHistory.push({ role: "user", parts: [{ text: userText }] });
 
-        // Auto-resize the textarea as the user types (up to CSS max-height)
-        userInput.addEventListener('input', () => {
-            userInput.style.height = 'auto';
-            userInput.style.height = Math.min(userInput.scrollHeight, 100) + 'px';
-        });
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: conversationHistory,
+                        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }
+                    })
+                });
 
-        // Send on Enter (without Shift, which allows newline)
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Something went wrong talking to the server.');
+                }
+
+                const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text
+                    || "Hmm, I didn't get a proper reply. Try again?";
+
+                conversationHistory.push({ role: "model", parts: [{ text: botReply }] });
+                return { ok: true, text: botReply };
+            } catch (err) {
+                return { ok: false, text: err.message };
             }
-        });
+        }
 
-        sendBtn.addEventListener('click', sendMessage);
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+            sendBtn.disabled = true;
+            showTyping();
+
+            const result = await sendMessage(text);
+            hideTyping();
+
+            if (result.ok) {
+                addMessage(result.text, 'bot');
+            } else {
+                addMessage('⚠️ ' + result.text, 'error');
+            }
+            sendBtn.disabled = false;
+            userInput.focus();
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
 
         clearBtn.addEventListener('click', () => {
             conversationHistory = [];
             chatThread.innerHTML = '';
-            renderMessage('bot', OPENING_GREETING);
+            addMessage(OPENING_GREETING, 'bot');
         });
 
-        // ---------------- Core send / API call logic ----------------
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
-
-            // Show user's message immediately
-            renderMessage('user', text);
-            conversationHistory.push({ role: 'user', parts: [{ text }] });
-
-            // Reset input box
-            userInput.value = '';
-            userInput.style.height = 'auto';
-            setSendingState(true);
-
-            const typingRow = showTypingIndicator();
-
-            try {
-                const replyText = await callGeminiAPI();
-                removeTypingIndicator();
-                renderMessage('bot', replyText);
-                conversationHistory.push({ role: 'model', parts: [{ text: replyText }] });
-            } catch (err) {
-                removeTypingIndicator();
-                // Handle and display errors gracefully as a chat message, not an alert
-                let friendlyMsg = "Arre yaar, something went wrong. 😕 ";
-                if (err && err.message && err.message.includes('API key')) {
-                    friendlyMsg += "Looks like the API key isn't set up correctly. Please check the API_KEY constant at the top of the script.";
-                } else if (err && err.message && /network|fetch/i.test(err.message)) {
-                    friendlyMsg += "Network issue — check your internet connection and try again.";
-                } else {
-                    friendlyMsg += `Details: ${err && err.message ? err.message : 'Unknown error.'}`;
-                }
-                renderMessage('error', friendlyMsg);
-            } finally {
-                setSendingState(false);
-            }
-        }
-
-        function setSendingState(isSending) {
-            sendBtn.disabled = isSending;
-            userInput.disabled = isSending;
-        }
-
-        async function callGeminiAPI() {
-            if (!API_KEY || API_KEY === "PASTE_YOUR_API_KEY_HERE") {
-                throw new Error("API key is missing. Please paste your Gemini API key into the API_KEY constant.");
-            }
-
-            const requestBody = {
-                contents: conversationHistory,
-                system_instruction: SYSTEM_INSTRUCTION
-            };
-
-            let response;
-            try {
-                response = await fetch(`${API_URL}?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-            } catch (networkErr) {
-                throw new Error("Network error — could not reach the API.");
-            }
-
-            if (!response.ok) {
-                let errText = `API request failed (status ${response.status}).`;
-                try {
-                    const errJson = await response.json();
-                    if (errJson && errJson.error && errJson.error.message) {
-                        errText = errJson.error.message;
-                    }
-                } catch (_) { /* ignore parse failure, use default message */ }
-
-                if (response.status === 400 || response.status === 403) {
-                    throw new Error(`Invalid API key or request. ${errText}`);
-                }
-                throw new Error(errText);
-            }
-
-            const data = await response.json();
-
-            const candidate = data && data.candidates && data.candidates[0];
-            const partText = candidate &&
-                candidate.content &&
-                candidate.content.parts &&
-                candidate.content.parts.map(p => p.text || '').join('');
-
-            if (!partText) {
-                throw new Error("Received an empty response from the API.");
-            }
-
-            return partText;
-        }
-
-        // ---------------- Init ----------------
-        renderMessage('bot', OPENING_GREETING);
-        userInput.focus();
+        // Opening greeting on load
+        addMessage(OPENING_GREETING, 'bot');
     </script>
 
 </body>
