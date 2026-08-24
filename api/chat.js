@@ -1,5 +1,5 @@
 // api/chat.js
-// Vercel serverless function
+// Vercel serverless function (CommonJS syntax)
 
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
     try {
         const payload = { contents };
 
-        // Safely format systemInstruction depending on whether it's sent as a string or an object
+        // Safely format systemInstruction for string or object types
         if (systemInstruction) {
             if (typeof systemInstruction === 'string') {
                 payload.system_instruction = {
@@ -32,6 +32,13 @@ module.exports = async function handler(req, res) {
                 payload.system_instruction = systemInstruction;
             }
         }
+
+        // Add generationConfig with low thinkingLevel to reduce latency
+        payload.generationConfig = {
+            thinkingConfig: {
+                thinkingLevel: "LOW" // Set to "LOW" or "MINIMAL" for rapid response time
+            }
+        };
 
         const geminiResponse = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
