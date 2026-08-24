@@ -1,13 +1,11 @@
 // api/chat.js
-// Vercel serverless function (CommonJS syntax to eliminate build warnings)
+// Vercel serverless function
 
 module.exports = async function handler(req, res) {
-    // Only allow POST requests
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Make sure the key was set in Vercel's environment variables
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         return res.status(500).json({
@@ -23,10 +21,17 @@ module.exports = async function handler(req, res) {
 
     try {
         const payload = { contents };
+
+        // Normalize systemInstruction to match Gemini REST API requirements
         if (systemInstruction) {
-            payload.system_instruction = {
-                parts: [{ text: systemInstruction }]
-            };
+            if (typeof systemInstruction === 'string') {
+                payload.system_instruction = {
+                    parts: [{ text: systemInstruction }]
+                };
+            } else {
+                // If frontend already sent an object/array, pass it directly
+                payload.system_instruction = systemInstruction;
+            }
         }
 
         const geminiResponse = await fetch(
