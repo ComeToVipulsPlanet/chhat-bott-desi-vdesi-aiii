@@ -22,20 +22,19 @@ module.exports = async function handler(req, res) {
     try {
         const payload = { contents };
 
-        // Normalize systemInstruction to match Gemini REST API requirements
+        // Safely format systemInstruction depending on whether it's sent as a string or an object
         if (systemInstruction) {
             if (typeof systemInstruction === 'string') {
                 payload.system_instruction = {
                     parts: [{ text: systemInstruction }]
                 };
             } else {
-                // If frontend already sent an object/array, pass it directly
                 payload.system_instruction = systemInstruction;
             }
         }
 
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
