@@ -1,64 +1,71 @@
-// api/chat.js
-// Vercel serverless function (CommonJS syntax)
-
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const { contents, systemInstruction } = req.body;
+    const apiKey = process.env.NVIDIA_API_KEY;
+
     if (!apiKey) {
-        return res.status(500).json({
-            error: 'Server misconfiguration: GEMINI_API_KEY is not set in Vercel environment variables.'
+        return res.status(500).json({ error: 'NVIDIA API key not configured on server.' });
+    }
+
+    // Format history from Gemini format to OpenAI/NVIDIA format
+    const messages = [];
+
+    // Add System Instruction if present
+    if (systemInstruction?.parts?.[0]?.text) {
+        messages.push({
+            role: 'system',
+            content: systemInstruction.parts[0].text
         });
     }
 
-    const { contents, systemInstruction } = req.body || {};
-
-    if (!contents) {
-        return res.status(400).json({ error: 'Missing "contents" in request body.' });
+    // Map Gemini roles ('user', 'model') to NVIDIA roles ('user', 'assistant')
+    if (Array.isArray(contents)) {
+        contents.forEach((item) => {
+            messages.push({
+                role: item.role === 'model' ? 'assistant' : 'user',
+                content: item.parts?.[0]?.text || ''
+            });
+        });
     }
 
     try {
-        const payload = { contents };
+        const nvidiaResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'meta/llama-3.1-405b-instruct', // Change to your preferred NVIDIA model
+                messages: messages,
+                temperature: 0.7,
+                top_p: 1,
+                max_tokens: 1024
+            })
+        });
 
-        // Safely format systemInstruction for string or object types
-        if (systemInstruction) {
-            if (typeof systemInstruction === 'string') {
-                payload.system_instruction = {
-                    parts: [{ text: systemInstruction }]
-                };
-            } else {
-                payload.system_instruction = systemInstruction;
-            }
+        const data = await nvidiaResponse.json();
+
+        if (!nvidiaResponse.ok) {
+            throw new Error(data.detail || data.message || 'NVIDIA API Error');
         }
 
-        // Add generationConfig with low thinkingLevel to reduce latency
-        payload.generationConfig = {
-            thinkingConfig: {
-                thinkingLevel: "LOW" // Set to "LOW" or "MINIMAL" for rapid response time
-            }
-        };
+        const botReply = data.choices?.[0]?.message?.content || 'No response generated.';
 
-        const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }
-        );
-
-        const data = await geminiResponse.json();
-
-        if (!geminiResponse.ok) {
-            return res.status(geminiResponse.status).json({
-                error: data.error?.message || 'Gemini API request failed.'
-            });
-        }
-
-        return res.status(200).json(data);
+        // Keep response structure compatible with your existing HTML frontend
+        return res.status(200).json({
+            candidates: [
+                {
+                    content: {
+                        parts: [{ text: botReply }]
+                    }
+                }
+            ]
+        });
     } catch (err) {
-        return res.status(500).json({ error: 'Server error: ' + err.message });
+        return res.status(500).json({ error: err.message });
     }
-};
+}
