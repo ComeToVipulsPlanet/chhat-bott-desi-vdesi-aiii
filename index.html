@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Updated viewport tag with interactive-widget rule for mobile keyboards -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <title>Desi & Vdesi Ai</title>
 
     <!-- Google Font -->
@@ -34,14 +35,15 @@
             --bubble-style: pill;
         }
 
-        /* --layout-style concept:
-     - Desktop (>600px): centered card, max-width var(--chat-max-width), full viewport height minus margin.
-     - Mobile (<=600px): app fills the full screen edge-to-edge, header becomes a fixed top bar.
-     - Bubble radius, spacing, and colors all scale from the same variables so the
-       whole layout can be reskinned by editing :root only. */
-
         * {
             box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            /* Prevents whole-page bouncing on mobile */
         }
 
         body {
@@ -54,6 +56,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            min-height: 100dvh;
             padding: 16px;
         }
 
@@ -61,6 +64,7 @@
             width: 100%;
             max-width: var(--chat-max-width);
             height: 90vh;
+            height: 90dvh;
             max-height: 720px;
             background: #ffffff;
             border-radius: var(--border-radius);
@@ -76,6 +80,9 @@
             color: #fff;
             padding: 18px 20px;
             text-align: center;
+            position: relative;
+            flex-shrink: 0;
+            /* Prevents header from collapsing */
         }
 
         .chat-header h1 {
@@ -90,6 +97,24 @@
             opacity: 0.9;
         }
 
+        .chat-header-actions {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+        }
+
+        #clearBtn {
+            background: var(--color-secondary);
+            color: #1f2937;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-weight: 600;
+        }
+
         /* Message thread */
         .chat-thread {
             flex: 1;
@@ -99,6 +124,7 @@
             flex-direction: column;
             gap: 10px;
             background: var(--color-background);
+            -webkit-overflow-scrolling: touch;
         }
 
         .chat-thread::-webkit-scrollbar {
@@ -218,6 +244,8 @@
             padding: 12px;
             border-top: 1px solid #eee;
             background: #fff;
+            flex-shrink: 0;
+            /* Keeps input box pinned to bottom */
         }
 
         #userInput {
@@ -234,19 +262,16 @@
             border-color: var(--color-primary);
         }
 
-        #sendBtn,
-        #clearBtn {
+        #sendBtn {
             border: none;
             cursor: pointer;
             font-family: var(--font-family);
             font-weight: 600;
-        }
-
-        #sendBtn {
             background: var(--color-primary);
             color: #fff;
             padding: 10px 18px;
             border-radius: var(--border-radius);
+            flex-shrink: 0;
         }
 
         #sendBtn:hover {
@@ -258,24 +283,7 @@
             cursor: not-allowed;
         }
 
-        .chat-header-actions {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-        }
-
-        #clearBtn {
-            background: var(--color-secondary);
-            color: #1f2937;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
-
-        .chat-header {
-            position: relative;
-        }
-
+        /* Mobile specific adjustments */
         @media (max-width: 600px) {
             body {
                 padding: 0;
@@ -283,8 +291,15 @@
 
             .chat-app {
                 height: 100vh;
+                height: 100dvh;
+                /* Adapts dynamically on mobile screen resize */
                 max-height: none;
                 border-radius: 0;
+            }
+
+            /* 16px font size prevents Safari from auto-zooming on focus */
+            #userInput {
+                font-size: 16px;
             }
         }
     </style>
@@ -409,6 +424,13 @@ markdown formatting (bold, bullet lists) when it helps clarity.`;
         sendBtn.addEventListener('click', handleSend);
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') handleSend();
+        });
+
+        // Keeps recent messages visible when mobile keyboard displays
+        userInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                chatThread.scrollTop = chatThread.scrollHeight;
+            }, 300);
         });
 
         clearBtn.addEventListener('click', () => {
