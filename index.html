@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8" />
-    <!-- Updated viewport tag with interactive-widget rule for mobile keyboards -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <title>Desi & Vdesi Ai</title>
 
@@ -15,11 +14,6 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
-        /* ============================================
-     THEME VARIABLES — change these to reskin the
-     whole app. Every element below pulls its
-     colors/fonts/spacing from these variables.
-     ============================================ */
         :root {
             --theme-mode: light;
             --color-primary: #491603;
@@ -43,7 +37,6 @@
         body {
             height: 100%;
             overflow: hidden;
-            /* Prevents whole-page bouncing on mobile */
         }
 
         body {
@@ -82,7 +75,6 @@
             text-align: center;
             position: relative;
             flex-shrink: 0;
-            /* Prevents header from collapsing */
         }
 
         .chat-header h1 {
@@ -236,7 +228,7 @@
             }
         }
 
-        /* Input area */
+        /* Fixed Input Bar Layout */
         .chat-input-area {
             display: flex;
             align-items: center;
@@ -245,16 +237,19 @@
             border-top: 1px solid #eee;
             background: #fff;
             flex-shrink: 0;
-            /* Keeps input box pinned to bottom */
+            width: 100%;
         }
 
         #userInput {
             flex: 1;
+            min-width: 0;
+            /* Keeps input inside container bounds */
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             padding: 10px 16px;
             font-family: var(--font-family);
-            font-size: var(--font-size-base);
+            font-size: 16px;
+            /* Prevents auto-zoom on mobile safari */
             outline: none;
         }
 
@@ -272,6 +267,8 @@
             padding: 10px 18px;
             border-radius: var(--border-radius);
             flex-shrink: 0;
+            /* Stops send button from shrinking or hiding */
+            white-space: nowrap;
         }
 
         #sendBtn:hover {
@@ -283,7 +280,6 @@
             cursor: not-allowed;
         }
 
-        /* Mobile specific adjustments */
         @media (max-width: 600px) {
             body {
                 padding: 0;
@@ -292,14 +288,8 @@
             .chat-app {
                 height: 100vh;
                 height: 100dvh;
-                /* Adapts dynamically on mobile screen resize */
                 max-height: none;
                 border-radius: 0;
-            }
-
-            /* 16px font size prevents Safari from auto-zooming on focus */
-            #userInput {
-                font-size: 16px;
             }
         }
     </style>
@@ -325,9 +315,7 @@
     </div>
 
     <script>
-        // ============================================
         // Persona / system instruction
-        // ============================================
         const SYSTEM_PROMPT = `You are Desi & Vdesi Ai, a warm, witty chatbot with a fun desi-flavored
 personality. You mix friendliness with a bit of playful Hinglish/desi humor where natural, but
 you always stay clear and helpful. Keep replies concise, conversational, and easy to read. Use
@@ -335,7 +323,6 @@ markdown formatting (bold, bullet lists) when it helps clarity.`;
 
         const OPENING_GREETING = "Arre hello! 👋 I'm Desi & Vdesi Ai — your friendly desi-style chat buddy. Kya haal hai? Ask me anything!";
 
-        // Conversation history sent to the API each time, for context
         let conversationHistory = [];
 
         const chatThread = document.getElementById('chatThread');
@@ -366,11 +353,6 @@ markdown formatting (bold, bullet lists) when it helps clarity.`;
             if (typing) typing.remove();
         }
 
-        // ============================================
-        // Sends the message to our own secure serverless
-        // endpoint (/api/chat) instead of calling Gemini
-        // directly. The API key lives only on the server.
-        // ============================================
         async function sendMessage(userText) {
             conversationHistory.push({ role: "user", parts: [{ text: userText }] });
 
@@ -426,7 +408,6 @@ markdown formatting (bold, bullet lists) when it helps clarity.`;
             if (e.key === 'Enter') handleSend();
         });
 
-        // Keeps recent messages visible when mobile keyboard displays
         userInput.addEventListener('focus', () => {
             setTimeout(() => {
                 chatThread.scrollTop = chatThread.scrollHeight;
